@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export async function sendEmalService({ to, subject }) {
+export async function sendEmailService({ to, subject }) {
     
   const transporter = nodemailer.createTransport({
     host: "localhost",
@@ -14,7 +14,7 @@ export async function sendEmalService({ to, subject }) {
   });
 
   const mailInfo = await transporter.sendMail({
-    from: '"Fred Foo 👻" <foo@example.com>',
+    from: '"Fred Foo 👻" <mee9978331@gmail.com>',
     to: to || "",
     subject: subject || "",
     text: "Hello world?",

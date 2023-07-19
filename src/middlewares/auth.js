@@ -16,7 +16,7 @@ export const auth = async (req, res, next) => {
     return res.status(400).json({ message: "Invalid token" });
   }
   try {
-    const decodedToken = jwt.verify(userToken, "trelloSecret");
+    const decodedToken = jwt.verify(userToken, process.env.SIGN_IN_TOKEN_SECRET);
     console.log(decodedToken)
       if (!decodedToken || !decodedToken._id) {
         return res.status(400).json({ message: "Invalid token" });

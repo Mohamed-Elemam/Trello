@@ -1,6 +1,8 @@
+
 import { userModel } from "../../../database/models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sendEmailService } from "../../sevices/emailConfimationService.js";
 //* 1-signUp
 
 export const signUp = async (req, res, next) => {
@@ -10,7 +12,9 @@ export const signUp = async (req, res, next) => {
     if (isUserExist) {
       return res.status(400).json({ message: "email already exist" });
     }
-    const hashedPassword = bcrypt.hashSync(password, 8);
+    console.log(process.env.SALT_ROUNDS)  // logs 8
+
+    const hashedPassword = bcrypt.hashSync(password, +process.env.SALT_ROUNDS);
     const userInstance = new userModel({
       userName,
       email,
@@ -22,12 +26,12 @@ export const signUp = async (req, res, next) => {
       isOnline: false,
     });
     await userInstance.save();
-    const cofirmToken = jwt.decode({email},"comfirmSecret")
-    
+    const cofirmToken = jwt.sign({email},"comfirmSecret")
+    sendEmailService(email , "test")
     
     res.status(200).json({ message: "Done", userInstance });
   } else {
-    return res.status(400).json({ message: "password dont match" });
+    return res.status(400).json({ message: "passwords dont match" });
   }
 };
 
@@ -51,7 +55,7 @@ export const login = async (req, res, next) => {
   user.isDeleted = false;
   user = await user.save();
 
-  const userToken = jwt.sign({ email, _id: user.id }, "trelloSecret");
+  const userToken = jwt.sign({ email, _id: user.id }, process.env.SIGN_IN_TOKEN_SECRET);
   res.status(200).json({ message: "Login successful", userToken });
 };
 

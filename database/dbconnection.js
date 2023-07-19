@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 
 export const  dbConnection = async ()=>{
 
-await mongoose.connect('mongodb://127.0.0.1:27017/trello')
+await mongoose.connect(process.env.DB_connection_url)
 .then(()=>{console.log('database connect successfully')})
 .catch((err)=>{console.log('database connection failed',err)})
 }

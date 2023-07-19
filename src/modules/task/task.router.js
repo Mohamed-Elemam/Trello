@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as tc from "./task.controller.js";
 import { errorHandling } from "../../../utils/errorhandling.js";
-import { auth } from "./../middlewares/auth.js";
+import { auth } from "../../middlewares/auth.js";
 
 const router = Router();
 
