@@ -2,11 +2,13 @@ import { Router } from "express";
 import * as uc from "./user.controller.js";
 import { errorHandling } from "../../../utils/errorhandling.js";
 import { auth } from "../../middlewares/auth.js";
+import { coreValidationFunction } from "../../middlewares/validation.js";
+import { userSchema } from "./user.validationSchema.js";
 
 const router = Router();
 
 //* 1-signUp
-router.post("/signUp", errorHandling(uc.signUp));
+router.post("/signUp", coreValidationFunction(userSchema),errorHandling(uc.signUp));
 
 router.get("/confirmEmail/:token",errorHandling(uc.confirmEmail))
 //* 2-login-->with create token

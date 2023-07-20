@@ -27,9 +27,10 @@ export const signUp = async (req, res, next) => {
 
     const cofirmToken = jwt.sign(
       { email },
-      process.env.CONFIRM_EMAIL_TOKEN_SECRET,{expiresIn:'1h'}
+      process.env.CONFIRM_EMAIL_TOKEN_SECRET,
+      { expiresIn: "1h" }
     );
-    const confirmLink =`http://localhost:3000/user/confirmEmail/${cofirmToken}`
+    const confirmLink = `http://localhost:3000/user/confirmEmail/${cofirmToken}`;
     await sendEmailService({
       to: email,
       subject: "Please confirm your email",
@@ -48,17 +49,18 @@ export const confirmEmail = async (req, res, next) => {
     token,
     process.env.CONFIRM_EMAIL_TOKEN_SECRET
   );
-  const confirmationCheck = await userModel.findOne({email:decodedToken.email})
-  if(confirmationCheck.isConfirmed === true){
-    return   res.status(400).json({ message: "your email is already confirmed" });
+  const confirmationCheck = await userModel.findOne({
+    email: decodedToken.email,
+  });
+  if (confirmationCheck.isConfirmed === true) {
+    return res.status(400).json({ message: "your email is already confirmed" });
   }
   const user = await userModel.findOneAndUpdate(
     { email: decodedToken.email },
     { isConfirmed: true },
     { new: true }
   );
-  res.status(200).json({ message: "email confirmed" , user});
-
+  res.status(200).json({ message: "email confirmed", user });
 };
 //===============================================================
 //* 2-login-->with create token

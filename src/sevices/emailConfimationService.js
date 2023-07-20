@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 export async function sendEmailService({ to, subject ,message , attachments=[]}={}) {
     
   const transporter = nodemailer.createTransport({
-    host: "localhost",
+    host: "smtp.gmail.com",
     port: 587,
     service: "gmail",
     secure: false,
