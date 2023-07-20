@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-export async function sendEmailService({ to, subject }) {
+export async function sendEmailService({ to, subject ,message , attachments=[]}={}) {
     
   const transporter = nodemailer.createTransport({
     host: "localhost",
@@ -8,16 +8,16 @@ export async function sendEmailService({ to, subject }) {
     service: "gmail",
     secure: false,
     auth: {
-      user: "mee9978331@gmail.com",
-      pass: "jwimvtplyvkcsinv",
+      user: "mohamed.elking27001@gmail.com",
+      pass: "kltposwikkraxmmg",
     },
   });
 
   const mailInfo = await transporter.sendMail({
-    from: '"Fred Foo 👻" <mee9978331@gmail.com>',
-    to: to || "",
-    subject: subject || "",
-    text: "Hello world?",
-    html: "<b>Hello world?</b>",
+    from: 'mohamed.elking27001@gmail.com',
+    to: to?to : "",
+    subject: subject?subject : "",
+    html: message?message :"",
+    attachments,
   });
 }

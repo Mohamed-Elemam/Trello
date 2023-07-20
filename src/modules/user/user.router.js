@@ -8,6 +8,7 @@ const router = Router();
 //* 1-signUp
 router.post("/signUp", errorHandling(uc.signUp));
 
+router.get("/confirmEmail/:token",errorHandling(uc.confirmEmail))
 //* 2-login-->with create token
 router.post("/logIn", errorHandling(uc.login));
 

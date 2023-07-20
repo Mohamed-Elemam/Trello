@@ -31,10 +31,9 @@ isOnline:{
 },
 isDeleted:{
     type:String,
-    enum:{values :[true , false]},
-   
+    default:false
 },
-isConfimed:{
+isConfirmed:{
     type:Boolean,
     default:false
 }
