@@ -4,6 +4,7 @@ import { errorHandling } from "../../../utils/errorhandling.js";
 import { auth } from "../../middlewares/auth.js";
 import { coreValidationFunction } from "../../middlewares/validation.js";
 import { userSchema } from "./user.validationSchema.js";
+import { allowedExtensions, multerFunction } from "../../sevices/multerCloud.js";
 
 const router = Router();
 
@@ -28,5 +29,16 @@ router.patch("/softDelete", auth, errorHandling(uc.softDelete));
 
 //*7-logout
 router.patch("/logout", auth, errorHandling(uc.logOut));
+
+//** new ** logged user qr code
+router.get("/myQrCode", auth, errorHandling(uc.myQrCode));
+
+//** new ** search user by id and get his qr code 
+router.get("/searchUserQrCode/:_id", auth, errorHandling(uc.searchUserQrCode));
+
+
+
+router.post("/uploadProfilePic",auth, multerFunction(allowedExtensions.Image).single('picture'), errorHandling(uc.uploadProfilePic));
+router.post("/uploadBulkProfile",auth, multerFunction(allowedExtensions.Image).array('picture'), errorHandling(uc.uploadProfilePic));
 
 export default router;

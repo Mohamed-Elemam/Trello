@@ -20,4 +20,10 @@ app.use("*", (req, res, next) => {
   res.status(404).json({ message: "Error 404 url not found" });
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.use((err, req, res, next) => {
+  if (err) {
+    return res.status(err['cause']||500).json({ message: err.message });
+  }
+});
+
+app.listen(port, () => console.log(`App is listening on port ${port}!`));

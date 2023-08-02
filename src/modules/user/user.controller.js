@@ -2,6 +2,8 @@ import { userModel } from "../../../database/models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendEmailService } from "../../sevices/emailConfimationService.js";
+import { generateQrCode } from "../../../utils/qrCodeFunction.js";
+import cloudinary from "./../../../utils/cloudnairyConfig.js";
 //* 1-signUp
 
 export const signUp = async (req, res, next) => {
@@ -221,3 +223,83 @@ export const logOut = async (req, res, next) => {
 
   res.status(200).json({ message: "User logged out successfully" });
 };
+
+//** new ** logged user qr code
+export const myQrCode = async (req, res, next) => {
+  const { _id } = req.authUser;
+
+  const user = await userModel.findById(_id);
+  if (user.isOnline == false) {
+    return res.status(400).json({ message: "User already logged out" });
+  }
+  if (!user) {
+    return res.status(400).json({ message: "Invalid login credentials" });
+  }
+
+  if (user.isDeleted == true) {
+    return res
+      .status(400)
+      .json({ message: "This account is deleted. Please login again." });
+  }
+  const qrcode = await generateQrCode({
+    data: [
+      { id: user._id },
+      { userName: user.userName },
+      { email: user.email },
+    ],
+  });
+  res.status(200).json({ message: "done", qrcode });
+};
+
+//** new ** search user by id and get his qr code
+export const searchUserQrCode = async (req, res, next) => {
+  const { _id } = req.params;
+
+  const user = await userModel.findById(_id);
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid user id" });
+  }
+
+  if (user.isDeleted == true) {
+    return res.status(400).json({ message: "This account is deleted." });
+  }
+  const qrcode = await generateQrCode({
+    data: [
+      { id: user._id },
+      { userName: user.userName },
+      { email: user.email },
+    ],
+  });
+  res.status(200).json({ message: "done", qrcode });
+};
+
+//**new upload one profile picture
+export const uploadProfilePic = async (req, res, next) => {
+  const { _id } = req.authUser;
+  if (!req.file) {
+    return next(new Error("please upload a profile picture", { cause: 400 }));
+  }
+
+  const { url, secure_url } = await cloudinary.uploader.upload(req.file.path, {
+    folder: `Users/Profiles/${req.authUser._id}`,
+    unique_filename: false,
+    resource_type: "image",
+    public_id:true
+  });
+
+  const user = await userModel.findByIdAndUpdate(
+    _id,
+    { profilePic: { url, secure_url } },
+    { new: true }
+  );
+
+  if(!user){
+    await cloudinary.uploader.destroy(url)
+  }
+  res.status(200).json({ message: "done", user });
+};
+
+
+//**new upload bulck cover pictures
+

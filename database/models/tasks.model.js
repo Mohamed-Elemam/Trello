@@ -24,7 +24,11 @@ assignTo:{
 },
 deadline:{
     type:Date
+},taskPic:{
+    url :String, secure_url:String
 },
+taskCoverPic:[{   url :String, secure_url:String}]
+
 
 },{timestamps : true})
 

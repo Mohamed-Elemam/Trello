@@ -8,13 +8,13 @@ export async function sendEmailService({ to, subject ,message , attachments=[]}=
     service: "gmail",
     secure: false,
     auth: {
-      user: "mohamed.elking27001@gmail.com",
-      pass: "kltposwikkraxmmg",
+      user: "mohamed.719.917@gmail.com",
+      pass: "ajtjpeaahsdjmmcq",
     },
   });
 
   const mailInfo = await transporter.sendMail({
-    from: 'mohamed.elking27001@gmail.com',
+    from: 'mohamed.719.917@gmail.com',
     to: to?to : "",
     subject: subject?subject : "",
     html: message?message :"",
