@@ -274,7 +274,7 @@ export const searchUserQrCode = async (req, res, next) => {
   res.status(200).json({ message: "done", qrcode });
 };
 
-//**new upload one profile picture
+//**new ** upload one profile picture
 export const uploadProfilePic = async (req, res, next) => {
   const { _id } = req.authUser;
   if (!req.file) {
@@ -285,7 +285,6 @@ export const uploadProfilePic = async (req, res, next) => {
     folder: `Users/Profiles/${req.authUser._id}`,
     unique_filename: false,
     resource_type: "image",
-    public_id:true
   });
 
   const user = await userModel.findByIdAndUpdate(
@@ -294,12 +293,73 @@ export const uploadProfilePic = async (req, res, next) => {
     { new: true }
   );
 
-  if(!user){
-    await cloudinary.uploader.destroy(url)
+  if (!user) {
+    await cloudinary.uploader.destroy(url);
   }
-  res.status(200).json({ message: "done", user });
+  res.status(200).json({ message: "done",  user  });
+};
+//**new ** upload bulk profile picture
+export const bulkProfilePics = async (req, res, next) => {
+  const { _id } = req.authUser;
+  let bulkPictures = req.files
+  if (!bulkPictures) {
+    return next(new Error("no picture attached", { cause: 400 }));
+  }
+let uploadPromise=bulkPictures.map(async(picture)=>{
+  const { url, secure_url } = await cloudinary.uploader.upload(picture.path, {
+    folder: `Users/Profiles/${req.authUser._id}`,
+    unique_filename: false,
+    resource_type: "image",
+  });
+return url, secure_url
+})
+ let uploadResponse=await Promise.all (uploadPromise)
+
+  // const user = await userModel.findByIdAndUpdate(
+  //   _id,
+  //   { profilePic: { url, secure_url } },
+  //   { new: true }
+  // );
+
+  // if (!user) {
+  //   await cloudinary.uploader.destroy(url);
+  // }
+  res.status(200).json({ message: "done",  uploadResponse  });
 };
 
+//** new ** delete one picture
+export const deleteOnePic = async (req, res, next) => {
+  const { _id } = req.authUser;
+  const { public_id } = req.body;
 
-//**new upload bulck cover pictures
+  if (!public_id || typeof public_id !== "string") {
+    return res.status(400).json({ message: "Invalid public_id" });
+  }
+  const result = await cloudinary.uploader.destroy(public_id);
 
+  if (result.result == "not found") {
+    return res.status(400).json({ message: "picture not found" });
+  }
+
+  res.status(200).json({ message: "picture deleted", result });
+};
+
+//** new **delete folder
+export const deleteFolder = async (req, res, next) => {
+  const { _id } = req.authUser;
+  const { folder } = req.body;
+
+  if (!folder) {
+    return res.status(400).json({ message: "Invalid folder " });
+  }
+
+  try {
+    await cloudinary.api.delete_resources_by_prefix(folder);
+    const result = await cloudinary.api.delete_folder(folder);
+    res.status(200).json({ message: "Folder deleted", result });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(400).json({ message: error.error.message });
+  }
+};

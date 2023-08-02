@@ -4,14 +4,21 @@ import { errorHandling } from "../../../utils/errorhandling.js";
 import { auth } from "../../middlewares/auth.js";
 import { coreValidationFunction } from "../../middlewares/validation.js";
 import { userSchema } from "./user.validationSchema.js";
-import { allowedExtensions, multerFunction } from "../../sevices/multerCloud.js";
+import {
+  allowedExtensions,
+  multerFunction,
+} from "../../sevices/multerCloud.js";
 
 const router = Router();
 
 //* 1-signUp
-router.post("/signUp", coreValidationFunction(userSchema),errorHandling(uc.signUp));
+router.post(
+  "/signUp",
+  coreValidationFunction(userSchema),
+  errorHandling(uc.signUp)
+);
 
-router.get("/confirmEmail/:token",errorHandling(uc.confirmEmail))
+router.get("/confirmEmail/:token", errorHandling(uc.confirmEmail));
 //* 2-login-->with create token
 router.post("/logIn", errorHandling(uc.login));
 
@@ -33,12 +40,28 @@ router.patch("/logout", auth, errorHandling(uc.logOut));
 //** new ** logged user qr code
 router.get("/myQrCode", auth, errorHandling(uc.myQrCode));
 
-//** new ** search user by id and get his qr code 
+//** new ** search user by id and get his qr code
 router.get("/searchUserQrCode/:_id", auth, errorHandling(uc.searchUserQrCode));
 
+//**new upload one profile picture
+router.post(
+  "/uploadProfilePic",
+  auth,
+  multerFunction(allowedExtensions.Image).single("picture"),
+  errorHandling(uc.uploadProfilePic)
+);
+//**new upload bulk profile pictures
+router.post(
+  "/uploadBulkProfilepics",
+  auth,
+  multerFunction(allowedExtensions.Image).array("picture"),
+  errorHandling(uc.bulkProfilePics)
+);
 
+//** new ** delete one picture
+router.delete("/deleteOnePic", auth, errorHandling(uc.deleteOnePic));
 
-router.post("/uploadProfilePic",auth, multerFunction(allowedExtensions.Image).single('picture'), errorHandling(uc.uploadProfilePic));
-router.post("/uploadBulkProfile",auth, multerFunction(allowedExtensions.Image).array('picture'), errorHandling(uc.uploadProfilePic));
+//** new **delete folder
+router.delete("/deleteFolder", auth, errorHandling(uc.deleteFolder));
 
 export default router;
