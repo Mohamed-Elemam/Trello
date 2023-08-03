@@ -36,10 +36,10 @@ const userSchema = new Schema(
       default: false,
     },
     profilePic: {
-      url: String,
+      public_id: String,
       secure_url: String,
     },
-    coverPic: [{ url: String, secure_url: String }],
+    coverPic: { public_id: String, secure_url: String },
   },
   {
     timestamps: true,

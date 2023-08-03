@@ -281,50 +281,86 @@ export const uploadProfilePic = async (req, res, next) => {
     return next(new Error("please upload a profile picture", { cause: 400 }));
   }
 
-  const { url, secure_url } = await cloudinary.uploader.upload(req.file.path, {
-    folder: `Users/Profiles/${req.authUser._id}`,
-    unique_filename: false,
-    resource_type: "image",
-  });
+  const { public_id, secure_url } = await cloudinary.uploader.upload(
+    req.file.path,
+    {
+      folder: `Users/Profiles/${req.authUser._id}`,
+      unique_filename: false,
+      resource_type: "image",
+    }
+  );
 
   const user = await userModel.findByIdAndUpdate(
     _id,
-    { profilePic: { url, secure_url } },
+    { profilePic: { public_id, secure_url } },
     { new: true }
   );
 
   if (!user) {
-    await cloudinary.uploader.destroy(url);
+    await cloudinary.uploader.destroy(public_id);
   }
-  res.status(200).json({ message: "done",  user  });
+  res.status(200).json({ message: "done", user });
+}
+
+//**new ** upload one profile picture
+export const uploadUserCoverPic = async (req, res, next) => {
+  const { _id } = req.authUser;
+  if (!req.file) {
+    return next(new Error("please upload a cover picture", { cause: 400 }));
+  }
+
+  const { public_id, secure_url } = await cloudinary.uploader.upload(
+    req.file.path,
+    {
+      folder: `Users/Cover/${req.authUser._id}`,
+      unique_filename: false,
+      resource_type: "image",
+    }
+  );
+
+  const user = await userModel.findByIdAndUpdate(
+    _id,
+    { coverPic: { public_id, secure_url } },
+    { new: true }
+  );
+
+  if (!user) {
+    await cloudinary.uploader.destroy(public_id);
+  }
+  res.status(200).json({ message: "done", user });
 };
 //**new ** upload bulk profile picture
 export const bulkProfilePics = async (req, res, next) => {
   const { _id } = req.authUser;
-  let bulkPictures = req.files
+  let bulkPictures = req.files;
   if (!bulkPictures) {
     return next(new Error("no picture attached", { cause: 400 }));
   }
-let uploadPromise=bulkPictures.map(async(picture)=>{
-  const { url, secure_url } = await cloudinary.uploader.upload(picture.path, {
-    folder: `Users/Profiles/${req.authUser._id}`,
-    unique_filename: false,
-    resource_type: "image",
+  let uploadPromise = bulkPictures.map(async (picture) => {
+    const { public_id, secure_url } = await cloudinary.uploader.upload(
+      picture.path,
+      {
+        folder: `Users/Profiles/${req.authUser._id}`,
+        unique_filename: false,
+        resource_type: "image",
+      }
+    );
+    return { public_id, secure_url };
   });
-return url, secure_url
-})
- let uploadResponse=await Promise.all (uploadPromise)
+  let uploadResponse = await Promise.all(uploadPromise);
 
-  // const user = await userModel.findByIdAndUpdate(
-  //   _id,
-  //   { profilePic: { url, secure_url } },
-  //   { new: true }
-  // );
+  const user = await userModel.findByIdAndUpdate(
+    _id,
+    { profilePic: uploadResponse },
+    { new: true }
+  );
 
-  // if (!user) {
-  //   await cloudinary.uploader.destroy(url);
-  // }
-  res.status(200).json({ message: "done",  uploadResponse  });
+  if (!user) {
+    uploadResponse.forEach(async (pic) => {
+      await cloudinary.uploader.destroy(pic.public_id);
+    });
+  }
+  res.status(200).json({ message: "done", user });
 };
 
 //** new ** delete one picture
@@ -344,9 +380,37 @@ export const deleteOnePic = async (req, res, next) => {
   res.status(200).json({ message: "picture deleted", result });
 };
 
+//** new ** delete many pictures
+export const deleteManyPics = async (req, res, next) => {
+  const toDeletePics = req.body.publicIDs;
+
+  if (!toDeletePics || !Array.isArray(toDeletePics)) {
+    return res.status(400).json({ message: "Invalid public_id" });
+  }
+  try {
+    const deleteResults = [];
+
+    for (const publicID of toDeletePics) {
+      try {
+        await cloudinary.api.resource(publicID);
+        deleteResults.push(publicID);
+      } catch (error) {
+        console.log(`Image not found for publicID: ${publicID}`);
+        deleteResults.push(publicID);
+      }
+    }
+    const deletedPublicIDs = await cloudinary.api.delete_resources(
+      deleteResults
+    );
+
+    res.status(200).json({ message: "pictures deleted", deletedPublicIDs });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 //** new **delete folder
 export const deleteFolder = async (req, res, next) => {
-  const { _id } = req.authUser;
   const { folder } = req.body;
 
   if (!folder) {
@@ -362,4 +426,21 @@ export const deleteFolder = async (req, res, next) => {
 
     return res.status(400).json({ message: error.error.message });
   }
+};
+//** new **delete all images in  a folder
+export const deleteAllImages = async (req, res, next) => {
+  const { folder } = req.body;
+
+  if (!folder) {
+    return res.status(400).json({ message: "Invalid folder " });
+  }
+
+  try {
+    const result =await cloudinary.api.delete_resources_by_prefix(folder);
+    res.status(200).json({ message: "images deleted", result });
+  } catch (error) {
+    console.log(error);
+
+  }
+
 };

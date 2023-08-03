@@ -50,6 +50,15 @@ router.post(
   multerFunction(allowedExtensions.Image).single("picture"),
   errorHandling(uc.uploadProfilePic)
 );
+
+//**new upload one cover picture
+router.post(
+  "/uploadUserCoverPic",
+  auth,
+  multerFunction(allowedExtensions.Image).single("picture"),
+  errorHandling(uc.uploadUserCoverPic)
+);
+
 //**new upload bulk profile pictures
 router.post(
   "/uploadBulkProfilepics",
@@ -61,7 +70,15 @@ router.post(
 //** new ** delete one picture
 router.delete("/deleteOnePic", auth, errorHandling(uc.deleteOnePic));
 
+//** new ** delete many pictures
+router.delete("/deleteBulk", auth, errorHandling(uc.deleteManyPics));
+
 //** new **delete folder
 router.delete("/deleteFolder", auth, errorHandling(uc.deleteFolder));
+
+
+
+//** new **delete all images in  a folder
+router.delete("/deleteAllImages", auth, errorHandling(uc.deleteAllImages));
 
 export default router;
